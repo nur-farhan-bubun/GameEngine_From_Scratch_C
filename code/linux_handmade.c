@@ -1,0 +1,76 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+
+int main(int argc, char **argv)
+{
+    Display *Display = XOpenDisplay(NULL);
+    if(Display == NULL)
+    {
+        fprintf(stderr, "Cannot open display\n");
+        exit(1);
+    }
+
+    int Screen = DefaultScreen(Display);
+    Window Root = RootWindow(Display, Screen);
+
+    int WindowWidth = 800;
+    int WindowHeight = 600;
+
+    Window Window = XCreateSimpleWindow(Display, Root, 
+                                        10, 10, WindowWidth, WindowHeight, 1,
+                                        BlackPixel(Display, Screen), 
+                                        WhitePixel(Display, Screen));
+
+    XSelectInput(Display, Window, ExposureMask | KeyPressMask | StructureNotifyMask);
+    XMapWindow(Display, Window);
+
+   
+    Atom WM_DELETE_WINDOW = XInternAtom(Display, "WM_DELETE_WINDOW", False);
+    XSetWMProtocols(Display, Window, &WM_DELETE_WINDOW, 1);
+
+    printf("Handmade Hero Linux Platform Layer Started\n");
+
+    int Running = 1;
+    while(Running)
+    {
+        XEvent Event;
+        XNextEvent(Display, &Event);
+
+        switch(Event.type)
+        {
+            case KeyPress:
+            {
+                Running = 0;
+            } break;
+
+            case ConfigureNotify:
+            {
+                XConfigureEvent xce = Event.xconfigure;
+                if (xce.width != WindowWidth || xce.height != WindowHeight)
+                {
+                    WindowWidth = xce.width;
+                    WindowHeight = xce.height;
+                    printf("Window resized to: %dx%d\n", WindowWidth, WindowHeight);
+                }
+            } break;
+
+            case ClientMessage:
+            {
+                if ((Atom)Event.xclient.data.l[0] == WM_DELETE_WINDOW)
+                {
+                    Running = 0;
+                }
+            } break;
+
+            default:
+                break;
+        }
+    }
+
+    XCloseDisplay(Display);
+    printf("Platform Layer Shutting Down\n");
+
+    return 0;
+}
