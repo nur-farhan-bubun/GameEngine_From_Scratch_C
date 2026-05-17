@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     Atom WM_DELETE_WINDOW = XInternAtom(Display, "WM_DELETE_WINDOW", False);
     XSetWMProtocols(Display, Window, &WM_DELETE_WINDOW, 1);
 
-    printf("Handmade Hero Linux Platform Layer Started\n");
+   
 
     int Running = 1;
     while(Running)
@@ -38,40 +38,35 @@ int main(int argc, char **argv)
         XEvent Event;
         XNextEvent(Display, &Event);
 
+        switch(Event.type)
+        {
+            case KeyPress:
+            {
+                Running = 0;
+            } break;
 
-        
-        if (Event.type == Expose) {
-        
-            GC gc = XCreateGC(Display, Window, 0, NULL);
+            case ConfigureNotify:
+            {
+                XConfigureEvent xce = Event.xconfigure;
+                if (xce.width != WindowWidth || xce.height != WindowHeight)
+                {
+                    WindowWidth = xce.width;
+                    WindowHeight = xce.height;
+                    printf("Window resized to: %dx%d\n", WindowWidth, WindowHeight);
+                }
+            } break;
 
-          
-            Colormap colormap = DefaultColormap(Display, Screen);
-            XColor blue_color;
-            XParseColor(Display, colormap, "#0000FF", &blue_color);
-            XAllocColor(Display, colormap, &blue_color);
+            case ClientMessage:
+            {
+                if ((Atom)Event.xclient.data.l[0] == WM_DELETE_WINDOW)
+                {
+                    Running = 0;
+                }
+            } break;
 
-           
-            XSetForeground(Display, gc, blue_color.pixel);
-
-           
-            XFillRectangle(Display, Window, gc, 150, 120, 200, 150);
-
-           
-            XFreeGC(Display, gc);
-        }
-
-       
-        if (Event.type == KeyPress) {
-            break;
-        }
-
-     
-        if (Event.type == ClientMessage) {
-            if ((Atom)Event.xclient.data.l[0] == WM_DELETE_WINDOW) {
+            default:
                 break;
-            }
         }
-       
     }
 
     XCloseDisplay(Display);
