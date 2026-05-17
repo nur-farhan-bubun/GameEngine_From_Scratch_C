@@ -47,7 +47,8 @@ int main(int argc, char **argv)
           
             Colormap colormap = DefaultColormap(Display, Screen);
             XColor blue_color;
-            XParseColor(Display, colormap, "#0000FF", &blue_color);
+            static char *old_blue_color = "#000000";
+            XParseColor(Display, colormap,old_blue_color, &blue_color);
             XAllocColor(Display, colormap, &blue_color);
 
            
