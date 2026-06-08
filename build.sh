@@ -13,3 +13,5 @@ echo "Building Handmade Hero..."
 gcc -g code/linux_handmade.c -o build/handmade_hero -lX11
 
 echo "Build complete."
+#./build.sh
+#./build/handmade_hero
